@@ -39,10 +39,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Autowired
     private UserRepository userRepository;
     final static String VERSION = "0.1.9";
-    final static String SPECIAL_THANKS = """
-            Отдельная благодарность:\s
-            @Bloods_4L
-            @tiltmachinegun""";
+    final static String SPECIAL_THANKS =
+            "Отдельная благодарность:\n"+
+                    "@Bloods_4L\n"+
+                    "@tiltmachinegun";
     final static String VERSION_TXT = "Данные об обновлениях:\n" +
             "\tТекущая версия бота: " + VERSION + "\n" +
             "Нововведения каждой версии:\n" +
@@ -62,25 +62,22 @@ public class TelegramBot extends TelegramLongPollingBot {
             "\t0.0.2: добавлено выпадающее меню с доступными командами.\n" +
             "\t0.0.1: добавлены 2 команды: /start и /help.\n\n" +
             "Отдельные благодарности: ";
-    final static String HELP_TXT = """
-            Внимание! Если бот вдруг не работает как надо, то возможно вас еще нет в базе. Чтобы зарегистрироваться, отправьте команду /start
+    final static String HELP_TXT =
+            "Внимание! Если бот вдруг не работает как надо, то возможно вас еще нет в базе. Чтобы зарегистрироваться, отправьте команду /start\n"+
+                    "Доступные команды:\n\n"+
 
-            Доступные команды:
-            
-            \t/help - список доступных команд
-            \t/versions - информация о версиях бота
-            \t/changegroup [номер_группы] (напр. /changegroup 71)- подписаться на уведомления по расписанию для вашей группы
-            \t/mygroup - узнать свою текущую группу
-            \t/myrole - узнать свою роль
-            \t/timetable - узнать расписание своей группы
-            \t/feedback [ваши любые пожелания или опыт использования] - Опишите опыт использования ботом.
-            \t/thanks - благодарности
-            \t/update - проверить расписание на сайте. ВНИМАНИЕ функция экспериментальная, прошу использовать только если вы подписаны на обновления, а вам все еще не пришло расписание
+                    "\t/help - список доступных команд\n" +
+                    "\t/versions - информация о версиях бота\n" +
+                    "\t/changegroup [номер_группы] (напр. /changegroup 71)- подписаться на уведомления по расписанию для вашей группы\n"+
+                    "\t/mygroup - узнать свою текущую группу\n"+
+                    "\t/myrole - узнать свою роль\n"+
+                    "\t/timetable - узнать расписание своей группы\n"+
+                    "\t/feedback [ваши любые пожелания или опыт использования] - Опишите опыт использования ботом.\n"+
+                    "\t/thanks - благодарности\n"+
+                    "\t/update - проверить расписание на сайте. ВНИМАНИЕ функция экспериментальная, прошу использовать только если вы подписаны на обновления, а вам все еще не пришло расписание\n\n"+
 
-            Бот хостится на моем компе, поэтому по очевидным причинам иногда будет недоступен, но если он будет уж очень всем полезен и нужен, то так и быть, раскошелюсь на сервер, только скажите
-
-            При обнаружении багов, или если есть какие-либо пожелания, то пишите в /feedback или мне в тг:
-            @Sasalomka""";
+                    "При обнаружении багов, или если есть какие-либо пожелания, то пишите в /feedback или мне в тг:\n"+
+                    "@Sasalomka";
 
     Timer timer;
 
@@ -305,9 +302,15 @@ public class TelegramBot extends TelegramLongPollingBot {
         String text = "Ваша роль: ";
 
         switch (role) {
-            case 0 -> sendMessage(chatId, text + "бедолага");
-            case 1 -> sendMessage(chatId, text + "работяга");
-            case 2 -> sendMessage(chatId, text + "гигачад");
+            case 0:
+                sendMessage(chatId, text + "бедолага");
+                break;
+            case 1:
+                sendMessage(chatId, text + "работяга");
+                break;
+            case 2:
+                sendMessage(chatId, text + "гигачад");
+                break;
         }
         logsUpdate(new Date() + "\tUser: " + chatId + " MYROLE COMMAND");
     }
