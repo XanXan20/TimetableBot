@@ -472,6 +472,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             answer += i + " - ";
             for(String str : lesionName){
                 str = str.trim();
+                str = str.replaceAll("\\s+", " ");
                 answer += str + " | ";
             }
             answer += "\n";
