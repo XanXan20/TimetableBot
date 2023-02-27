@@ -533,14 +533,14 @@ public class TelegramBot extends TelegramLongPollingBot {
                     public void run() {
                         checkNewTimetable();
                     }
-                }, 32000000, 3200000);
+                }, 32000000, 7200000);
+                oldPath = path;
+
+                ConvertXlsxToXls.convert(path);
+                System.out.println("Файл загружен");
+                excelFileReader.update();
             }
 
-            oldPath = path;
-
-            ConvertXlsxToXls.convert(path);
-            System.out.println("Файл загружен");
-            excelFileReader.update();
             sendMessage(634876835, "Расписание обновлено");
         }catch (Exception e){
             e.printStackTrace();
