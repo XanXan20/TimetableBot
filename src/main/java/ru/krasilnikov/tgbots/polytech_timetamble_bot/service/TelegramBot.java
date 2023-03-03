@@ -356,7 +356,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                             "Не ваше расписание?\n" +
                             "/mygroup - ваша группа\n" +
                             "/changegroup [номер_группы] - выбрать вашу группу");
-                    sendFile(user.getChatId(), new java.io.File("C:\\Users\\Sasalomka\\Documents\\GitHub\\Polytech_Timetable_Bot\\data\\actualTimetable.xls"));
+                    sendFile(user.getChatId(), excelFileReader.getFile());
                 }
             }
         }
