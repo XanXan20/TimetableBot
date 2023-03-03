@@ -63,6 +63,7 @@ public class XLSFileReader{
         while(cellIterator.hasNext()){
             Cell cell = cellIterator.next();
                 //какая-то ебаная проверка на понедельник надо отредачить, но сначала затестить как она рабоатет
+            //вроде она добавляет к номеру конечной строки количество классных часов
             if(cell.getCellType() == CellType.STRING && cell.getStringCellValue().contains("Классный час")){
                 i++;
                 lastRow+=2;
@@ -95,7 +96,7 @@ public class XLSFileReader{
                             int lastMergedRowId = cellRange.getLastRow();
 
                             for(int k = firstMergeRowId; k <= lastMergedRowId;k++){
-                                groupTimetable.put(k - 3, lesionName);//--------------------------- вот тут временная тест-мера с к-3
+                                groupTimetable.put(k - 3 + (isMonday ? 1 : 0), lesionName);//--------------------------- вот тут временная тест-мера с к-3
                                 //по идее, в понедельник число i будет не 4, а больше (типа отступ) поэтому мб придется поменять
                             }
                         }
@@ -103,23 +104,7 @@ public class XLSFileReader{
                     if(!isInMegre)
                         groupTimetable.put(lesionId, lesionName);
                 }
-            }catch (NullPointerException e){
-
-            }
-
-
-//            if(lesionName.equals("") || lesionName.contains("Классный час"))
-//                continue;
-//
-//            switch (lesionId) {
-//                case 1, 2-> groupTimetable.put(1, lesionName);
-//                case 3, 4 -> groupTimetable.put(2, lesionName);
-//                case 5, 6 -> groupTimetable.put(3, lesionName);
-//                case 7, 8 -> groupTimetable.put(4, lesionName);
-//                case 9, 10 -> groupTimetable.put(5, lesionName);
-//                case 11, 12 -> groupTimetable.put(6, lesionName);
-//                case 13, 14 -> groupTimetable.put(7, lesionName);
-//            }
+            }catch (NullPointerException e){}
         }
         return groupTimetable;
     }

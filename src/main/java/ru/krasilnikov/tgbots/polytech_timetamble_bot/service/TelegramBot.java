@@ -86,15 +86,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.config = config;
 
         try{
-//            String[] arrName = checkLastFile().split("\\.");
-//            if(arrName[1].equals("xlsx")) {
-//                excelFileReader = new XLSXFileReader(new java.io.File(checkLastFile()));
-//            }
-//            else if(arrName[1].equals("xls"))
             excelFileReader = new XLSFileReader();
             excelFileReader.update();
-//
-//            else System.out.println("Last file loading error");
 
         }catch (Exception e){
             System.out.println(e.getMessage());
@@ -526,7 +519,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         try{
             String path = SiteCommunication.downloadFile();
             if(!path.equals(oldPath)) {
-                noticeCommandReceiver();
                 timer.cancel();
                 timer = new Timer();
                 timer.schedule(new TimerTask() {
@@ -540,6 +532,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 ConvertXlsxToXls.convert(path);
                 System.out.println("Файл загружен");
                 excelFileReader.update();
+                noticeCommandReceiver();
             }
 
             sendMessage(634876835, "Расписание обновлено");
