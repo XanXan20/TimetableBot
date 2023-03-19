@@ -25,15 +25,6 @@ import java.util.zip.ZipOutputStream;
 @Component
 @Slf4j
 public class TelegramBot extends TelegramLongPollingBot {
-    @Value("${dataFolderPath}")
-    String dataFolderPath;
-    @Value("${logsFilePath}")
-    String logsFilePath;
-    String lastFilePath = "/home/TimetableBot/data/last_file.txt";
-    @Value("${feedbackFilePath}")
-    String feedbackFilePath;
-    @Value("${zipLogsFolderPath}")
-    String zipLogsFolderPath;
     XLSFileReader excelFileReader;
     static String date = "{тут должна быть дата}";
     String oldPath;//тут крч записывается старое расписание, и када новое приходит, он названия сравнивает
@@ -116,9 +107,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 case "/getUpd":
                     sendFile(update.getMessage().getChatId(), new File("/home/data-dumb.sql"));
                     break;
-                case "/myrole":
-                    myRoleCommandReceiver(update.getMessage().getChatId());
-                    break;
                 case "/timetable":
                     timetableCommandReceiver(chatId);
                     break;
@@ -150,7 +138,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             user.setNotice(true);
 
             userRepository.save(user);
-            logsUpdate(new Date() + "\tUser: " + chatId + " was registered");
         }
     }
     private void startCommandReceived(long chatId, String name){
@@ -164,7 +151,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
     private void helpCommandReceived(long chatId){
         sendMessage(chatId, HELP_TXT);
-        logsUpdate(new Date() + "\tUser: " + chatId + " HELP COMMAND");
     }
     private void myGroupCommandReceiver(long chatId){
 
@@ -177,7 +163,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         else {
             sendMessage(chatId, "Номер вашей группы: " + user.getGroupId());
         }
-        logsUpdate(new Date() + "\tUser: " + chatId + " MYGROUP COMMAND");
     }
     private void changeGroupCommandReceiver(Message msg, String stringGroupId){
 
@@ -203,31 +188,12 @@ public class TelegramBot extends TelegramLongPollingBot {
                 userRepository.save(user);
 
                 sendMessage(msg.getChatId(), "Ваша группа успешно изменена.");
-                logsUpdate(new Date() + "\tUser: " + msg.getChatId() + " CHANGE GROUP FROM: " + oldGroupId + " TO: " + stringGroupId);
                 return;
             }
         }
         sendMessage(msg.getChatId(), "Такой группы не найдено, проверьте корректность введенных данных");
     }
-    private void myRoleCommandReceiver(long chatId){
 
-        int role = getRole(chatId);
-
-        String text = "Ваша роль: ";
-
-        switch (role) {
-            case 0:
-                sendMessage(chatId, text + "бедолага");
-                break;
-            case 1:
-                sendMessage(chatId, text + "работяга");
-                break;
-            case 2:
-                sendMessage(chatId, text + "гигачад");
-                break;
-        }
-        logsUpdate(new Date() + "\tUser: " + chatId + " MYROLE COMMAND");
-    }
     private void timetableCommandReceiver(long chatId){
 
         Optional<User> optionalUser = userRepository.findById(chatId);
@@ -238,8 +204,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         sendMessage(chatId, date + ":\n\n" + answer);
         sendFile(chatId, excelFileReader.getFile());
-
-        logsUpdate(new Date() + "\tUser: " + chatId + " TIMETABLE COMMAND");
     }
     private void autoNoticeCommandReceiver(long chatId){
 
@@ -254,12 +218,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
 
         userRepository.save(user);
-
-        logsUpdate(new Date() + "\tUser: " + chatId + " AUTONOTICE COMMAND; SUBSCRIBER = " + user.isNotice());
     }
     private void thanksCommandReceiver(long chatId){
         sendMessage(chatId, SPECIAL_THANKS);
-        logsUpdate(new Date() + "\tUser: " + chatId + " THANKS COMMAND");
     }
     private void noticeCommandReceiver(){
         ArrayList<Integer> list = excelFileReader.getGroupIdList();
@@ -282,61 +243,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         }
 
-    }
-    private void customNoticeCommandReceiver(ArrayList<String> messageList, boolean isOnlySub, long chatId){
-        Iterable<User> users = userRepository.findAll();
-        String message = "";
-
-        for(String str : messageList){
-            message += str + " ";
-        }
-        message = message.trim();
-        if(isOnlySub) {
-            for (User user :
-                    users) {
-                if (user.isNotice())
-                    sendMessage(user.getChatId(), message);
-            }
-        }
-        else{
-            for (User user :
-                    users) {
-                sendMessage(user.getChatId(), message);
-            }
-        }
-
-        logsUpdate(new Date() + "\tUser: " + chatId + " CUSTOMNOTICE COMMAND;\n\tNOTICE TEXT: " + message);
-    }
-    private void feedbackCommandReceiver(Message message, ArrayList<String> feedback){
-        String feedbackFile = feedbackFilePath;
-        try (FileWriter writer = new FileWriter(feedbackFile, true)){
-            Date date = new Date();
-            writer.write("Username: " + message.getChat().getUserName() + " ID: " + message.getChatId() + " Date: " + date + "--> ");
-            for(String str : feedback){
-                writer.write(str + " ");
-            }
-            writer.write("\n");
-            writer.flush();
-        }catch (IOException e){
-            System.out.println(e.getMessage());
-        }
-
-        sendMessage(message.getChatId(), "Спасибо за фидбек, еще можно написать мне в тг (подробности в /help)");
-
-        logsUpdate(new Date() + "\tUser: " + message.getChatId() + " FEEDBACK COMMAND");
-    }
-    private void personalNoticeCommandReceiver(String chatId, ArrayList<String> messageList){
-        long l = Long.parseLong(chatId);
-        String message = "";
-
-        for(String str : messageList){
-            message += str + " ";
-        }
-        message = message.trim();
-
-        sendMessage(l, message);
-
-        logsUpdate(new Date() + "\tUser: " + chatId + " SEND PERSONAL NOTICE TO USER: " + l + "\n\tMESSAGE TEXT: " + message);
     }
     private void sendMessage(long chatId, String textToSend){
         SendMessage message = new SendMessage();
@@ -363,12 +269,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             System.out.println(e.getMessage());
         }
     }
-    private int getRole(long chatId){
-        Optional<User> optionalUser = userRepository.findById(chatId);
-        User user = optionalUser.get();
-
-        return user.getRole();
-    }
     private String findGroupTimetable(int groupId){
 
         Map<Integer, String> groupTimetable = excelFileReader.getGroupTimetable(groupId);
@@ -393,46 +293,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         return answer;
     }
 
-    private void setLastFile(String fileName){
-        try(FileWriter writer = new FileWriter(lastFilePath)) {
-            writer.write(fileName);
-        }catch (IOException e){
-            System.out.println(e.getMessage());
-        }
-    }
-    private void logsUpdate(String log){
-        try(FileWriter writer = new FileWriter(logsFilePath, true);){
-
-            writer.write(log + "\n");
-
-            java.io.File file = new java.io.File(logsFilePath);
-
-            long fileInBytes = file.length();
-            long fileInKb = fileInBytes/1024;
-            long fileInMb = fileInKb/1024;
-
-            if(fileInMb > 100){
-                System.out.println("Должна начаться архивация файла");
-                try(ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipLogsFolderPath + new Date() + ".zip"));
-                    FileInputStream fis = new FileInputStream(logsFilePath)){
-
-                    ZipEntry zipEntry = new ZipEntry(new Date().toString());
-                    zos.putNextEntry(zipEntry);
-
-                    byte[] buf = new byte[fis.available()];
-                    fis.read(buf);
-
-                    zos.write(buf);
-                    zos.closeEntry();
-
-                    file.delete();
-                }
-            }
-
-        }catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-    }
     private void checkNewTimetable(){
         sendMessage(634876835, "Проверка обновлений на сайте, пожалуйста подождите...");
 
