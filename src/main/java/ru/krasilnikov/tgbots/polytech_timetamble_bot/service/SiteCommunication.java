@@ -23,7 +23,7 @@ public class SiteCommunication {
         String fileName = urlArray[urlArray.length-1];
 
         FileUtils.copyURLToFile(new URL(url), new File("/home/TimetableBot/data/timetables/" + fileName));
-        System.out.println("Загружен файл по ссылке: " + url);
+        System.out.println("File downloaded from link: " + url);
         return "/home/TimetableBot/data/timetables/" + fileName;
     }
 }

@@ -110,7 +110,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     myGroupCommandReceiver(update.getMessage().getChatId());
                     break;
                 case "/getUpd":
-                    sendFile(update.getMessage().getChatId(), new File("/home/data-dumb.sql"));
+                    sendFile(update.getMessage().getChatId(), new File("/home/data-dumb.txt"));
                     break;
                 case "/timetable":
                     timetableCommandReceiver(chatId);
@@ -304,11 +304,10 @@ public class TelegramBot extends TelegramLongPollingBot {
                 oldPath = path;
 
                 ConvertXlsxToXls.convert(path);
-                System.out.println("Файл загружен");
+                System.out.println("File downloaded");
                 excelFileReader.update();
 
-
-                //noticeCommandReceiver();
+                noticeCommandReceiver();
             }
         }catch (Exception e){
             e.printStackTrace();
