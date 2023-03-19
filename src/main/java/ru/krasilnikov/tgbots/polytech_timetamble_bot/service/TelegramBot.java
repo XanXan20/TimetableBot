@@ -16,6 +16,7 @@ import ru.krasilnikov.tgbots.polytech_timetamble_bot.model.User;
 import ru.krasilnikov.tgbots.polytech_timetamble_bot.model.UserRepository;
 
 import java.io.*;
+import java.io.File;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -38,45 +39,22 @@ public class TelegramBot extends TelegramLongPollingBot {
     String oldPath;//тут крч записывается старое расписание, и када новое приходит, он названия сравнивает
     @Autowired
     private UserRepository userRepository;
-    final static String VERSION = "0.1.9";
     final static String SPECIAL_THANKS =
             "Отдельная благодарность:\n"+
                     "@Bloods_4L\n"+
                     "@tiltmachinegun";
-    final static String VERSION_TXT = "Данные об обновлениях:\n" +
-            "\tТекущая версия бота: " + VERSION + "\n" +
-            "Нововведения каждой версии:\n" +
-            "\t0.1.9: перенос бота с FirefoxWebDriver на HtmlUtilDriver для оптимизации запросов \n" +
-            "\t0.1.8: бот умеет проверять и загружать новое расписание с сайта, подробнее в /help \n" +
-            "\t0.1.7: вместе с расписанием группы присылается полное расписание на случай ошибок в чтении файла\n" +
-            "\t0.1.6: теперь бот принимает не только .xlsx файлы, но и .xls без лишний действий в виде конвертации в нужный формат\n" +
-            "\t0.1.5: логи архивируются при достижении некоторого объема\n" +
-            "\t0.1.4: добавление логов в бота\n" +
-            "\t0.1.3: изменение способа хранения файлов, небольшой рефакторинг кода, расширение команд админа\n" +
-            "\t0.1.2: добавление фидбека /feedback\n" +
-            "\t0.1.1: добавление регулярного выражения для симпатичного вывода\n" +
-            "\t0.1: добавлена подписка на уведомления и собственно уведомления\n" +
-            "\t0.0.5: добавлены: загрузка файла, чтение файла, разделение на юзеров и админов, возможность узнать свое расписание вручную\n" +
-            "\t0.0.4: добавлены команды /changegroup и /mygroup\n" +
-            "\t0.0.3: добавлена поддержка СУБД MySql\n" +
-            "\t0.0.2: добавлено выпадающее меню с доступными командами.\n" +
-            "\t0.0.1: добавлены 2 команды: /start и /help.\n\n" +
-            "Отдельные благодарности: ";
     final static String HELP_TXT =
             "Внимание! Если бот вдруг не работает как надо, то возможно вас еще нет в базе. Чтобы зарегистрироваться, отправьте команду /start\n"+
                     "Доступные команды:\n\n"+
 
                     "\t/help - список доступных команд\n" +
-                    "\t/versions - информация о версиях бота\n" +
                     "\t/changegroup [номер_группы] (напр. /changegroup 71)- подписаться на уведомления по расписанию для вашей группы\n"+
                     "\t/mygroup - узнать свою текущую группу\n"+
-                    "\t/myrole - узнать свою роль\n"+
                     "\t/timetable - узнать расписание своей группы\n"+
-                    "\t/feedback [ваши любые пожелания или опыт использования] - Опишите опыт использования ботом.\n"+
                     "\t/thanks - благодарности\n"+
                     "\t/update - проверить расписание на сайте. ВНИМАНИЕ функция экспериментальная, прошу использовать только если вы подписаны на обновления, а вам все еще не пришло расписание\n\n"+
 
-                    "При обнаружении багов, или если есть какие-либо пожелания, то пишите в /feedback или мне в тг:\n"+
+                    "При обнаружении багов, или если есть какие-либо пожелания, то пишите мне в тг:\n"+
                     "@Sasalomka";
 
     Timer timer;
@@ -95,13 +73,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
 
         timer = new Timer();
-
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                checkNewTimetable();
-            }
-        }, 0, 3200000);//43200000=12часов
     }
     @Override
     public String getBotUsername() {
@@ -126,9 +97,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 case "/help":
                     helpCommandReceived(chatId);
                     break;
-                case "/versions":
-                    versionCommandReceived(chatId);
-                    break;
                 case "/thanks":
                     thanksCommandReceiver(chatId);
                     break;
@@ -146,7 +114,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     myGroupCommandReceiver(update.getMessage().getChatId());
                     break;
                 case "/getUpd":
-                    sendMessage(update.getMessage().getChatId(), "ID этого сообщения: " + update.getMessage().getMessageId().toString());
+                    sendFile(update.getMessage().getChatId(), new File("/home/data-dumb.sql"));
                     break;
                 case "/myrole":
                     myRoleCommandReceiver(update.getMessage().getChatId());
@@ -154,51 +122,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                 case "/timetable":
                     timetableCommandReceiver(chatId);
                     break;
-                case "/notice":
-                    if(getRole(update.getMessage().getChatId()) == 2) {
-                        noticeCommandReceiver();
-                    } else{
-                        sendMessage(update.getMessage().getChatId(), "Недостаточно прав");
-                    }
-                    break;
                 case "/autonotice":
                     autoNoticeCommandReceiver(chatId);
-                    break;
-                case "/customnotice":
-                    if(getRole(update.getMessage().getChatId()) == 2) {
-                        boolean isOnlySubs = true;
-                        ArrayList<String> message = new ArrayList<>();
-                        for (int i = 2; i < messageText.length; i++) {
-                            message.add(messageText[i]);
-                        }
-
-                        if(messageText[1].equalsIgnoreCase("y"))
-                            isOnlySubs = false;
-
-                        customNoticeCommandReceiver(message, isOnlySubs, chatId);
-                    } else{
-                        sendMessage(update.getMessage().getChatId(), "Недостаточно прав");
-                    }
-                    break;
-                case "/feedback":
-                    if(messageText.length == 1)
-                        break;
-                    ArrayList<String> feedback = new ArrayList<>();
-                    for (int i = 1; i < messageText.length; i++) {
-                        feedback.add(messageText[i]);
-                    }
-                    feedbackCommandReceiver(update.getMessage(), feedback);
-                    break;
-                case "/personalnotice":
-                    if(getRole(update.getMessage().getChatId()) == 2) {
-                        ArrayList<String> message = new ArrayList<>();
-                        for (int i = 1; i < messageText.length; i++) {
-                            message.add(messageText[i]);
-                        }
-                        personalNoticeCommandReceiver(messageText[1], message);
-                    }else{
-                        sendMessage(update.getMessage().getChatId(), "Недостаточно прав");
-                    }
                     break;
                 case "/update":
                     checkNewTimetable();
@@ -240,10 +165,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void helpCommandReceived(long chatId){
         sendMessage(chatId, HELP_TXT);
         logsUpdate(new Date() + "\tUser: " + chatId + " HELP COMMAND");
-    }
-    private void versionCommandReceived(long chatId){
-        sendMessage(chatId, VERSION_TXT);
-        logsUpdate(new Date() + "\tUser: " + chatId + " VERSIONS COMMAND");
     }
     private void myGroupCommandReceiver(long chatId){
 
@@ -361,7 +282,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         }
 
-        //logsUpdate(new Date() + "\tUser: " + chatId + " NOTICE COMMAND");
     }
     private void customNoticeCommandReceiver(ArrayList<String> messageList, boolean isOnlySub, long chatId){
         Iterable<User> users = userRepository.findAll();
