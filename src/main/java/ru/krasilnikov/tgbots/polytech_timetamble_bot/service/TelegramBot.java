@@ -171,7 +171,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             intGroupId = Integer.parseInt(stringGroupId);
         }catch (Exception e){
-            log.error("Group Id not changed: exception");
             sendMessage(msg.getChatId(), "Ошибка в прочтении номера группы, возможно вы использовали буквы, а не числа, попробуйте еще раз.");
             return;
         }
@@ -183,7 +182,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 Optional<User> optionalUser = userRepository.findById(msg.getChatId());
 
                 User user = optionalUser.get();
-                int oldGroupId = user.getGroupId();
                 user.setGroupId(intGroupId);
 
                 userRepository.save(user);
@@ -255,15 +253,15 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
     private void sendFile(long chatId, java.io.File file){
 
-        Long longChatId = chatId;
+        long longChatId = chatId;
 
         InputFile inputFile = new InputFile(file);
 
-        SendDocument sendDocument = new SendDocument(longChatId.toString(), inputFile);
+        SendDocument sendDocument = new SendDocument(Long.toString(longChatId), inputFile);
         try{
             execute(sendDocument);
         }catch (TelegramApiException e){
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
     private String findGroupTimetable(int groupId){
