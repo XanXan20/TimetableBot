@@ -114,7 +114,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     myGroupCommandReceiver(update.getMessage().getChatId());
                     break;
                 case "/getUpd":
-                    sendFile(update.getMessage().getChatId(), new File("/home/data-dumb.sql"));
+                    sendFile(update.getMessage().getChatId(),   new File("/home/data-dumb.sql"));
                     break;
                 case "/myrole":
                     myRoleCommandReceiver(update.getMessage().getChatId());
