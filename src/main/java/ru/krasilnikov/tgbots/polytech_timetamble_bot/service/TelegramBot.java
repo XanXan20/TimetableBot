@@ -59,6 +59,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.config = config;
 
         try{
+            checkNewTimetable();
             excelFileReader = new XLSFileReader();
             excelFileReader.update();
 
