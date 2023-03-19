@@ -30,6 +30,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     String oldPath;//тут крч записывается старое расписание, и када новое приходит, он названия сравнивает
     @Autowired
     private UserRepository userRepository;
+    final static String END_TIMETABLE_STRING = "\n" +
+            "Не ваше расписание?\n" +
+            "/mygroup - ваша группа\n" +
+            "/changegroup [номер_группы] - выбрать вашу группу";
     final static String SPECIAL_THANKS =
             "Отдельная благодарность:\n"+
                     "@Bloods_4L\n"+
@@ -144,9 +148,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         String answer = "Привет, " + name + ", будем знакомы!\n" +
                 "Скоро ты сможешь смотреть расписание в нашем ЗАМЕЧАТЕЛЬНОМ КОЛЛЕДЖЕ\n\n" +
                 "P.S. ОБЯЗАТЕЛЬНО отправь /help, чтобы узнать больше о боте";
-
-        log.info("User " + name + " started work with bot");
-
         sendMessage(chatId, answer);
     }
     private void helpCommandReceived(long chatId){
@@ -202,7 +203,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         String answer = findGroupTimetable(userGroup);
 
-        sendMessage(chatId, date + ":\n\n" + answer);
+        sendMessage(chatId, date + ":\n\n" + answer + END_TIMETABLE_STRING);
         sendFile(chatId, excelFileReader.getFile());
     }
     private void autoNoticeCommandReceiver(long chatId){
@@ -233,11 +234,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             for (User user : users) {
                 if (user.getGroupId() == i && user.isNotice()) {
 
-                    sendMessage(user.getChatId(), date + ":\n\n" + timetable +
-                            "\n" +
-                            "Не ваше расписание?\n" +
-                            "/mygroup - ваша группа\n" +
-                            "/changegroup [номер_группы] - выбрать вашу группу");
+                    sendMessage(user.getChatId(), date + ":\n\n" + timetable + END_TIMETABLE_STRING);
                     sendFile(user.getChatId(), excelFileReader.getFile());
                 }
             }
@@ -253,7 +250,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(message);
         }catch(TelegramApiException e){
-            log.error("Error occured: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     private void sendFile(long chatId, java.io.File file){
@@ -294,8 +291,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void checkNewTimetable(){
-        sendMessage(634876835, "Проверка обновлений на сайте, пожалуйста подождите...");
-
         try{
             String path = SiteCommunication.downloadFile();
             if(!path.equals(oldPath)) {
@@ -312,13 +307,12 @@ public class TelegramBot extends TelegramLongPollingBot {
                 ConvertXlsxToXls.convert(path);
                 System.out.println("Файл загружен");
                 excelFileReader.update();
-                noticeCommandReceiver();
-            }
 
-            sendMessage(634876835, "Расписание обновлено");
+
+                //noticeCommandReceiver();
+            }
         }catch (Exception e){
             e.printStackTrace();
         }
-        //logsUpdate(new Date() + "\tUser: " + 634876835 + " UPDATE COMMAND");
     }
 }

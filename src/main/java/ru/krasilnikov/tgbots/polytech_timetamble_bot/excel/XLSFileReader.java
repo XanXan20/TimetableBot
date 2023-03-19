@@ -54,35 +54,14 @@ public class XLSFileReader{
 
         int groupColumn = groupIdToColumn.get(groupId);
 
-        int i = 4;
-        int lastRow = 18;
+        int lastRow = 19;
         boolean isMonday = false;
-        XSSFRow startReadingRow = sheet.getRow(i);
 
-        Iterator<Cell> cellIterator = startReadingRow.cellIterator();
-        while(cellIterator.hasNext()){
-            Cell cell = cellIterator.next();
-                //какая-то ебаная проверка на понедельник надо отредачить, но сначала затестить как она рабоатет
-            //вроде она добавляет к номеру конечной строки количество классных часов
-            if(cell.getCellType() == CellType.STRING && cell.getStringCellValue().contains("Классный час")){
-                i++;
-                lastRow+=2;
-                isMonday = true;
-                break;
-            }
-        }
-
-        for (int lesionId = 1; i < lastRow; i++, lesionId++) {
-
-            if(isMonday && i == 13)
-                i++; //такая же непонятная хня про понедельник(чота мне кажется она ваще не фурычит)
-
+        for (int i = 4; i < lastRow; i++) {
             XSSFRow row = sheet.getRow(i);
             try{
-
                 XSSFCell cell = row.getCell(groupColumn);
-
-
+                int lesionNumber = (int)row.getCell(groupColumn-1).getNumericCellValue();
                 String lesionName = cell.getStringCellValue();
 
                 if(!(lesionName.equals("") || lesionName.contains("Классный час"))){
@@ -95,14 +74,14 @@ public class XLSFileReader{
                             int firstMergeRowId = cellRange.getFirstRow();
                             int lastMergedRowId = cellRange.getLastRow();
 
-                            for(int k = firstMergeRowId; k <= lastMergedRowId;k++){
-                                groupTimetable.put(k - 3 + (isMonday ? 1 : 0), lesionName);//--------------------------- вот тут временная тест-мера с к-3
+                            for(int k = firstMergeRowId; k <= lastMergedRowId; k++){
+                                groupTimetable.put((int)sheet.getRow(k).getCell(groupColumn-1).getNumericCellValue(), lesionName);
                                 //по идее, в понедельник число i будет не 4, а больше (типа отступ) поэтому мб придется поменять
                             }
                         }
                     }
                     if(!isInMegre)
-                        groupTimetable.put(lesionId, lesionName);
+                        groupTimetable.put(lesionNumber, lesionName);
                 }
             }catch (NullPointerException e){}
         }
