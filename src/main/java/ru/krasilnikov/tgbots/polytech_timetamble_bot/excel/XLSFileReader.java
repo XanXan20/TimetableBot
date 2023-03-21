@@ -52,6 +52,9 @@ public class XLSFileReader{
     public Map<Integer, String> getGroupTimetable(int groupId) {
         Map<Integer, String> groupTimetable = new HashMap<>();
 
+        if(groupId == 0){
+
+        }
         int groupColumn = groupIdToColumn.get(groupId);
 
         int lastRow = 19;

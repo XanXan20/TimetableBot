@@ -201,6 +201,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         User user = optionalUser.get();
         int userGroup = user.getGroupId();
 
+        if(userGroup == 0){
+            sendMessage(chatId, "Ваша группа не выбрана, используйте команду /changegroup [номер_группы]");
+            return;
+        }
         String answer = findGroupTimetable(userGroup);
 
         sendMessage(chatId, date + ":\n\n" + answer + END_TIMETABLE_STRING);
