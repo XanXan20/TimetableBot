@@ -58,17 +58,17 @@ public class TelegramBot extends TelegramLongPollingBot {
     public TelegramBot(BotConfig config){
         this.config = config;
 
-//        try{
-//            checkNewTimetable();
-//            excelFileReader = new XLSFileReader();
-//            excelFileReader.update();
-//
-//        }catch (Exception e){
-//            System.out.println(e.getMessage());
-//            checkNewTimetable();
-//        }
-//
-//        timer = new Timer();
+        try{
+            checkNewTimetable();
+            excelFileReader = new XLSFileReader();
+            excelFileReader.update();
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            checkNewTimetable();
+        }
+
+        timer = new Timer();
 
     }
     @Override
@@ -90,9 +90,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 case "/start":
                     registerUser(update.getMessage());
                     startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                    break;
-                case "/end":
-                    endCommandReceiver();
                     break;
                 case "/help":
                     helpCommandReceived(chatId);
@@ -329,19 +326,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             sendMessage(chatId, answ);
         }catch (Exception e){
             e.printStackTrace();
-        }
-    }
-    private void endCommandReceiver(){
-        ArrayList<Integer> list = excelFileReader.getGroupIdList();
-        Iterable<User> users = userRepository.findAll();
-
-        for (Integer i:
-                list) {
-            for (User user : users) {
-                if (user.getGroupId() == i && user.isNotice()) {
-                    sendMessage(user.getChatId(), "Внимание, бот переезжает на @SolnechnayaTimetableBot, этот бот больше работать не будет");
-                }
-            }
         }
     }
 }
