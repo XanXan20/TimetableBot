@@ -4,7 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.sql.Timestamp;
 
-@Entity(name = "usersDataTable")
+@Entity(name = "solnechnayaUsers")
 public class User {
 
     @Id
@@ -14,16 +14,7 @@ public class User {
     private String userName;
     private Timestamp registeredAt;
     private int groupId;
-    private int role;
     private boolean isNotice;
-
-    public int getRole() {
-        return role;
-    }
-
-    public void setRole(int role) {
-        this.role = role;
-    }
 
     public int getGroupId() {
         return groupId;
@@ -90,7 +81,6 @@ public class User {
                 ", userName='" + userName + '\'' +
                 ", registeredAt=" + registeredAt +
                 ", groupId=" + groupId +
-                ", role=" + role +
                 '}';
     }
 }
